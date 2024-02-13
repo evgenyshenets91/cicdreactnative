@@ -1,24 +1,17 @@
-/**
- * Sample React Native App
- * https://github.com/facebook/react-native
- *
- * @format
- */
-
-import React from 'react';
+import React, { useEffect } from 'react';
 import type { PropsWithChildren } from 'react';
 import {
+  Alert,
+  Button,
   SafeAreaView,
   StatusBar,
   StyleSheet,
   useColorScheme,
 } from 'react-native';
 
+import Crashes from 'appcenter-crashes';
+import Analytics from 'appcenter-analytics';
 import { Colors, Header } from 'react-native/Libraries/NewAppScreen';
-
-type SectionProps = PropsWithChildren<{
-  title: string;
-}>;
 
 function App(): React.JSX.Element {
   const isDarkMode = useColorScheme() === 'dark';
@@ -27,6 +20,18 @@ function App(): React.JSX.Element {
     backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
   };
 
+  useEffect(() => {
+    const checkCrashInLastSession = async () => {
+      const response = await Crashes.hasCrashedInLastSession();
+
+      if (response) {
+        Alert.alert('Report', 'Sorry about that crash, we are working on it.');
+      }
+    };
+
+    checkCrashInLastSession();
+  }, []);
+
   return (
     <SafeAreaView style={backgroundStyle}>
       <StatusBar
@@ -34,6 +39,11 @@ function App(): React.JSX.Element {
         backgroundColor={backgroundStyle.backgroundColor}
       />
       <Header />
+      <Button title={'Crash app'} onPress={Crashes.generateTestCrash} />
+      <Button
+        title={'Send analytic event'}
+        onPress={() => Analytics.trackEvent('mock analytic event')}
+      />
     </SafeAreaView>
   );
 }
